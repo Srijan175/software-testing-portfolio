@@ -19,4 +19,4 @@ Create one copy of the template below for each defect confirmed during testing.
 - **Evidence:** screenshot filename and/or report link
 - **Status:** Open / Fixed / Retest / Closed
 
-Do not invent a defect. If no defects are found, write: “No defects observed in the executed test scope; this does not prove the entire application is defect-free.”
+
