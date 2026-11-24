@@ -1,0 +1,1 @@
+Store screenshots of the GitHub repository, test execution terminal, and any manual testing evidence here. Automated browser screenshots are stored in `05_Test_Automation/screenshots/`. Only include evidence that you actually captured.

@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Appointment Booking Demo</title>
+<style>
+body{font-family:Arial,sans-serif;max-width:760px;margin:32px auto;padding:0 16px;color:#222}
+main{border:1px solid #ccc;border-radius:12px;padding:24px}
+label{display:block;margin:14px 0 6px;font-weight:bold}
+input,select,button{font:inherit;padding:10px;width:100%;box-sizing:border-box}
+button{margin-top:16px;cursor:pointer;background:#165dba;color:white;border:0;border-radius:6px}
+button.cancel{width:auto;background:#9d2525;margin:0;padding:7px 12px}
+.message{padding:12px;margin-top:16px;border-radius:6px;background:#eee}
+.error{color:#a00000}.success{color:#075c20}
+.appointment{border:1px solid #ddd;border-radius:8px;padding:12px;margin:10px 0;display:flex;justify-content:space-between;gap:10px;align-items:center}
+small{color:#555}
+</style>
+</head>
+<body>
+<main>
+<h1>Online Appointment Booking</h1>
+<p>Educational demo application for software-testing coursework.</p>
+<form id="booking-form">
+<label for="name">Full name *</label>
+<input id="name" name="name" autocomplete="name" required>
+<label for="email">Email *</label>
+<input id="email" name="email" type="email" required>
+<label for="service">Service *</label>
+<select id="service" name="service" required>
+<option value="">Choose a service</option>
+<option>General Consultation</option><option>Dental Consultation</option><option>Follow-up Visit</option>
+</select>
+<label for="date">Appointment date *</label>
+<input id="date" name="date" type="date" required>
+<label for="time">Time slot *</label>
+<select id="time" name="time" required>
+<option value="">Choose a time</option>
+<option>09:00</option><option>10:00</option><option>11:00</option><option>14:00</option><option>15:00</option>
+</select>
+<button id="book-button" type="submit">Book appointment</button>
+</form>
+<div id="message" class="message" role="status" aria-live="polite">Complete the form to book an appointment.</div>
+<h2>My appointments</h2>
+<div id="appointments"><p id="empty-state">No appointments booked yet.</p></div>
+</main>
+<script>
+const form = document.querySelector("#booking-form");
+const message = document.querySelector("#message");
+const appointments = document.querySelector("#appointments");
+const dateInput = document.querySelector("#date");
+const today = new Date();
+const localToday = new Date(today.getTime() - today.getTimezoneOffset()*60000).toISOString().slice(0,10);
+dateInput.min = localToday;
+let nextId = 1;
+let bookings = [];
+
+function showMessage(text, kind) {
+  message.textContent = text;
+  message.className = "message " + kind;
+}
+function renderBookings() {
+  appointments.innerHTML = "";
+  if (bookings.length === 0) {
+    const empty = document.createElement("p");
+    empty.id = "empty-state";
+    empty.textContent = "No appointments booked yet.";
+    appointments.appendChild(empty);
+    return;
+  }
+  bookings.forEach(b => {
+    const card = document.createElement("div");
+    card.className = "appointment";
+    card.dataset.bookingId = String(b.id);
+    const detail = document.createElement("span");
+    detail.textContent = `${b.name} — ${b.service} — ${b.date} ${b.time} — ${b.status}`;
+    const cancel = document.createElement("button");
+    cancel.className = "cancel";
+    cancel.textContent = "Cancel";
+    cancel.type = "button";
+    cancel.addEventListener("click", () => {
+      b.status = "Cancelled";
+      renderBookings();
+      showMessage("Appointment cancelled.", "success");
+    });
+    card.append(detail, cancel);
+    appointments.appendChild(card);
+  });
+}
+form.addEventListener("submit", event => {
+  event.preventDefault();
+  if (!form.reportValidity()) return;
+  const data = new FormData(form);
+  const date = data.get("date");
+  if (date < localToday) {
+    showMessage("Please choose today or a future date.", "error");
+    return;
+  }
+  const duplicate = bookings.some(b => b.date === date && b.time === data.get("time") && b.status === "Confirmed");
+  if (duplicate) {
+    showMessage("That time slot is already booked. Please choose another slot.", "error");
+    return;
+  }
+  bookings.push({
+    id: nextId++,
+    name: data.get("name").trim(),
+    service: data.get("service"),
+    date,
+    time: data.get("time"),
+    status: "Confirmed"
+  });
+  renderBookings();
+  showMessage("Appointment booked successfully.", "success");
+  form.reset();
+});
+</script>
+</body>
+</html>
